@@ -24,6 +24,16 @@ jobs:
           channel: 'stable'
           flutter-version: '3.19.x'
 
+      - name: Generate Android Project Safely
+        run: |
+          # Backup our custom code
+          mv lib lib_backup
+          # Generate Android files
+          flutter create . --platforms android --org com.ashescricket.app
+          # Restore our custom code
+          rm -rf lib
+          mv lib_backup lib
+
       - name: Install dependencies
         run: flutter pub get
 
