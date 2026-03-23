@@ -2,8 +2,11 @@ name: Build Flutter APK
 
 on:
   push:
-    branches: [ "master", "main" ]
-  workflow_dispatch:
+    branches:
+      - master
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -16,24 +19,20 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
           flutter-version: '3.19.0'
+          channel: 'stable'
 
-      - name: Generate Project and Sync Pubspec
-        run: |
-          mv lib lib_backup
-          flutter create . --project-name ashes_cricket --platforms android --org com.ashescricket.app
-          rm -rf lib
-          mv lib_backup lib
-          
-          # Use printf to create pubspec to avoid heredoc indentation issues
-          printf "name: ashes_cricket\ndescription: Professional Ashes Cricket Scoring App\npublish_to: 'none'\nversion: 1.0.0+1\nenvironment:\n  sdk: '>=3.0.0 <4.0.0'\ndependencies:\n  flutter:\n    sdk: flutter\n  http: ^1.1.0\n  shared_preferences: ^2.2.2\n  web_socket_channel: ^2.4.0\n  google_fonts: ^6.1.0\n  provider: ^6.1.1\n  lucide_icons: ^0.1.2\nflutter:\n  uses-material-design: true\n" > pubspec.yaml
+      - name: Flutter Doctor
+        run: flutter doctor
+
+      - name: Fix Project Structure
+        run: flutter create .
 
       - name: Install dependencies
         run: flutter pub get
@@ -41,8 +40,8 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Ashes-Cricket-APK
+          name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
