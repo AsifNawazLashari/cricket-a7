@@ -27,36 +27,13 @@ jobs:
 
       - name: Generate Project and Sync Pubspec
         run: |
-          # 1. Move our code out of the way
           mv lib lib_backup
-          
-          # 2. Re-create the Android project (fixes all hidden hyphen/name issues)
           flutter create . --project-name ashes_cricket --platforms android --org com.ashescricket.app
-          
-          # 3. Put our custom code back
           rm -rf lib
           mv lib_backup lib
           
-          # 4. Generate a FRESH pubspec.yaml with PERFECT indentation
-          cat << 'PUBSPEC' > pubspec.yaml
-name: ashes_cricket
-description: Professional Ashes Cricket Scoring App
-publish_to: 'none'
-version: 1.0.0+1
-environment:
-  sdk: '>=3.0.0 <4.0.0'
-dependencies:
-  flutter:
-    sdk: flutter
-  http: ^1.1.0
-  shared_preferences: ^2.2.2
-  web_socket_channel: ^2.4.0
-  google_fonts: ^6.1.0
-  provider: ^6.1.1
-  lucide_icons: ^0.1.2
-flutter:
-  uses-material-design: true
-PUBSPEC
+          # Use printf to create pubspec to avoid heredoc indentation issues
+          printf "name: ashes_cricket\ndescription: Professional Ashes Cricket Scoring App\npublish_to: 'none'\nversion: 1.0.0+1\nenvironment:\n  sdk: '>=3.0.0 <4.0.0'\ndependencies:\n  flutter:\n    sdk: flutter\n  http: ^1.1.0\n  shared_preferences: ^2.2.2\n  web_socket_channel: ^2.4.0\n  google_fonts: ^6.1.0\n  provider: ^6.1.1\n  lucide_icons: ^0.1.2\nflutter:\n  uses-material-design: true\n" > pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
