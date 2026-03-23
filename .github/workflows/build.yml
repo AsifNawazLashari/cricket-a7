@@ -31,17 +31,26 @@ jobs:
       - name: Flutter Doctor
         run: flutter doctor
 
-      - name: Fix Project Structure
-        run: flutter create .
+      - name: Recreate Flutter Project Cleanly
+        run: |
+          rm -rf temp_app
+          flutter create temp_app
+          cp -r lib temp_app/
+          cp pubspec.yaml temp_app/
+          cd temp_app
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          cd temp_app
+          flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          cd temp_app
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: temp_app/build/app/outputs/flutter-apk/app-release.apk
