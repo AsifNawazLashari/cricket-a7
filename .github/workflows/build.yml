@@ -26,13 +26,18 @@ jobs:
 
       - name: Generate Android Project Safely
         run: |
-          # Backup our custom code
+          # Backup our custom code AND pubspec
           mv lib lib_backup
+          mv pubspec.yaml pubspec_backup.yaml
+          
           # Generate Android files
           flutter create . --platforms android --org com.ashescricket.app
-          # Restore our custom code
+          
+          # Restore our custom code and pubspec
           rm -rf lib
           mv lib_backup lib
+          rm pubspec.yaml
+          mv pubspec_backup.yaml pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
