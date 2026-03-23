@@ -23,22 +23,26 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.19.x'
+          flutter-version: '3.19.0'
 
       - name: Generate Android Project Safely
         run: |
-          # Backup our custom code AND pubspec
-          mv lib lib_backup
-          mv pubspec.yaml pubspec_backup.yaml
+          # 1. Backup our custom code and config
+          [ -d lib ] && mv lib lib_backup
+          [ -f pubspec.yaml ] && mv pubspec.yaml pubspec_backup.yaml
           
-          # Generate Android files
-          flutter create . --platforms android --org com.ashescricket.app
+          # 2. Force generate the Android project with a VALID project name (no hyphens!)
+          flutter create . --project-name ashes_cricket --platforms android --org com.ashescricket.app
           
-          # Restore our custom code and pubspec
+          # 3. Restore our custom code and original pubspec
           rm -rf lib
-          mv lib_backup lib
-          rm pubspec.yaml
-          mv pubspec_backup.yaml pubspec.yaml
+          [ -d lib_backup ] && mv lib_backup lib
+          
+          # 4. Correct the pubspec (ensuring the name matches the generated project)
+          if [ -f pubspec_backup.yaml ]; then
+            sed -i 's/name: .*/name: ashes_cricket/' pubspec_backup.yaml
+            mv pubspec_backup.yaml pubspec.yaml
+          fi
 
       - name: Install dependencies
         run: flutter pub get
