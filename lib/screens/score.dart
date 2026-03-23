@@ -125,7 +125,7 @@ class _ScoreScreenState extends State<ScoreScreen> {
       decoration: BoxDecoration(
         color: borderColor.withOpacity(0.05),
         border: Border.all(color: borderColor.withOpacity(0.2)),
-        borderLeft: BorderSide(color: borderColor, width: 3),
+        border: Border(left: BorderSide(color: borderColor, width: 3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
