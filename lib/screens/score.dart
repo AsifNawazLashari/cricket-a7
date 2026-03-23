@@ -1,3 +1,4 @@
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 
@@ -124,8 +125,7 @@ class _ScoreScreenState extends State<ScoreScreen> {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: borderColor.withOpacity(0.05),
-        border: Border.all(color: borderColor.withOpacity(0.2)),
-        border: Border(left: BorderSide(color: borderColor, width: 3),
+        border: Border(left: BorderSide(color: borderColor, width: 3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
