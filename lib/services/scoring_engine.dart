@@ -379,6 +379,7 @@ class ScoringEngine extends ChangeNotifier {
   }
 
   int _maxBowlerOvers = 2;
+  int get maxBowlerOvers => _maxBowlerOvers;
   void setMaxBowlerOvers(int v) { _maxBowlerOvers = v; notifyListeners(); }
 
   bool bowlerMaxed(String playerId) {

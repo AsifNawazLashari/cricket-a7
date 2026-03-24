@@ -643,7 +643,7 @@ class _ScoreScreenState extends State<ScoreScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('🎳 Select Bowler', style: AppTheme.rajdhani(20, FontWeight.w700, AppTheme.yellow)),
           const SizedBox(height: 4),
-          Text('Max ${_engine._maxBowlerOvers} overs per bowler',
+          Text('Max ${_engine.maxBowlerOvers} overs per bowler',
             style: AppTheme.condensed(11, FontWeight.w500, AppTheme.muted)),
           const SizedBox(height: 12),
           ...available.map((p) {
@@ -655,7 +655,7 @@ class _ScoreScreenState extends State<ScoreScreen> {
                 child: Text(p.jerseyNo?.toString() ?? '#',
                   style: AppTheme.rajdhani(14, FontWeight.w700, AppTheme.yellow))),
               title: Text('${p.roleIcon} ${p.name}', style: AppTheme.rajdhani(16, FontWeight.w700)),
-              subtitle: Text('$overs / ${_engine._maxBowlerOvers} overs  •  ${p.role}',
+              subtitle: Text('$overs / ${_engine.maxBowlerOvers} overs  •  ${p.role}',
                 style: AppTheme.condensed(11, FontWeight.w400, AppTheme.muted)),
               onTap: () {
                 Navigator.pop(context);

@@ -118,7 +118,7 @@ class CricketMatch {
       tossWinnerId: m['toss_winner_id'], tossDecision: m['toss_decision'],
       battingFirstId: m['batting_first_id'],
       winnerId: m['winner_id'], resultDesc: m['result_desc'],
-      inningsIds: idsMap.keys.toList(),
+      inningsIds: idsMap.keys.map((e) => e.toString()).toList(),
     );
   }
 
