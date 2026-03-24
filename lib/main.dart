@@ -1,177 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'theme.dart';
-import 'api_service.dart';
+import 'firebase_options.dart';
+import 'theme/app_theme.dart';
+import 'services/app_state.dart';
+import 'screens/home_screen.dart';
+import 'screens/tournaments_screen.dart';
+import 'screens/teams_screen.dart';
+import 'screens/stats_screen.dart';
+import 'screens/admin_screen.dart';
 
-// Import screens (We will create these next)
-import 'screens/home.dart';
-import 'screens/tournaments.dart';
-import 'screens/teams.dart';
-import 'screens/score.dart';
-import 'screens/stats.dart';
-import 'screens/admin.dart';
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
   runApp(
     ChangeNotifierProvider(
-      create: (_) => AppState(),
-      child: const AshesCricketApp(),
+      create: (_) => AppState()..init(),
+      child: const CricketA7App(),
     ),
   );
 }
 
-class AshesCricketApp extends StatelessWidget {
-  const AshesCricketApp({Key? key}) : super(key: key);
-
+class CricketA7App extends StatelessWidget {
+  const CricketA7App({super.key});
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ashes Cricket',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppTheme.bg,
-        primaryColor: AppTheme.cyan,
-        colorScheme: const ColorScheme.dark(
-          primary: AppTheme.cyan,
-          secondary: AppTheme.yellow,
-          background: AppTheme.bg,
-        ),
-      ),
-      home: const MainShell(),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Cricket A7',
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.theme,
+    home: const MainShell(),
+  );
 }
 
 class MainShell extends StatefulWidget {
-  const MainShell({Key? key}) : super(key: key);
-
-  @override
-  _MainShellState createState() => _MainShellState();
+  const MainShell({super.key});
+  @override State<MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
+  int _tab = 0;
 
-  final List<Widget> _pages = [
-    const HomeScreen(),
-    const TournamentsScreen(),
-    const TeamsScreen(),
-    const ScoreScreen(),
-    const StatsScreen(),
-    const AdminScreen(),
+  final _pages = const [
+    HomeScreen(),
+    TournamentsScreen(),
+    TeamsScreen(),
+    StatsScreen(),
+    AdminScreen(),
+  ];
+
+  final _navItems = const [
+    _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home'),
+    _NavItem(icon: Icons.emoji_events_outlined, activeIcon: Icons.emoji_events, label: 'Fixtures'),
+    _NavItem(icon: Icons.groups_outlined, activeIcon: Icons.groups, label: 'Teams'),
+    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart, label: 'Stats'),
+    _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'Admin'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final appState = Provider.of<AppState>(context);
-    final isDev = appState.hasRole(['developer']);
-    final canScore = appState.hasRole(['developer', 'organizer', 'captain']);
-
-    // Build Nav Items dynamically based on roles
-    List<BottomNavigationBarItem> navItems = [
-      _buildNavItem(LucideIcons.home, 'HOME'),
-      _buildNavItem(LucideIcons.calendar, 'FIXTURES'),
-      _buildNavItem(LucideIcons.users, 'TEAMS'),
-      if (canScore) _buildNavItem(LucideIcons.target, 'SCORE'),
-      _buildNavItem(LucideIcons.barChart2, 'STATS'),
-      if (isDev) _buildNavItem(LucideIcons.settings, 'ADMIN'),
-    ];
-
-    // Filter pages array to match nav items length
-    List<Widget> activePages = [
-      _pages[0],
-      _pages[1],
-      _pages[2],
-      if (canScore) _pages[3],
-      _pages[4],
-      if (isDev) _pages[5],
-    ];
-
+    final appState = context.watch<AppState>();
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.bg.withOpacity(0.95),
-            border: const Border(bottom: BorderSide(color: AppTheme.border)),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10)],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Text('🏏', style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 8),
-                      Text('ASHES CRICKET', style: AppTheme.rajdhani(20)),
-                    ],
-                  ),
-                  appState.user != null
-                      ? GestureDetector(
-                          onTap: () => appState.logout(),
-                          child: CircleAvatar(
-                            radius: 16,
-                            backgroundColor: AppTheme.cyan.withOpacity(0.1),
-                            child: Text(
-                              appState.user!['username'].substring(0, 2).toUpperCase(),
-                              style: AppTheme.rajdhani(14),
-                            ),
-                          ),
-                        )
-                      : TextButton(
-                          onPressed: () => _showAuthModal(context),
-                          style: TextButton.styleFrom(
-                            side: const BorderSide(color: AppTheme.cyan),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: Text('SIGN IN', style: AppTheme.condensed(12, FontWeight.bold, AppTheme.cyan)),
-                        )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: activePages[_currentIndex],
+      backgroundColor: AppTheme.bg,
+      body: SafeArea(child: IndexedStack(index: _tab, children: _pages)),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: const Border(top: BorderSide(color: AppTheme.border)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 15, offset: const Offset(0, -4))],
+          color: AppTheme.bg2.withOpacity(0.95),
+          border: Border(top: BorderSide(color: AppTheme.border)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, -4))],
         ),
-        child: BottomNavigationBar(
-          backgroundColor: AppTheme.bg2,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _currentIndex,
-          selectedItemColor: AppTheme.cyan,
-          unselectedItemColor: AppTheme.muted,
-          selectedLabelStyle: AppTheme.condensed(10, FontWeight.bold, AppTheme.cyan),
-          unselectedLabelStyle: AppTheme.condensed(10, FontWeight.bold, AppTheme.muted),
-          onTap: (index) => setState(() => _currentIndex = index),
-          items: navItems,
+        child: SafeArea(
+          child: Row(
+            children: _navItems.asMap().entries.where((e) {
+              // Hide Admin tab unless developer/organizer
+              if (e.key == 4 && !appState.isOrganizer) return false;
+              return true;
+            }).map((e) {
+              final i = e.key; final item = e.value;
+              final active = _tab == i;
+              return Expanded(child: GestureDetector(
+                onTap: () => setState(() => _tab = i),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: active ? AppTheme.cyan.withOpacity(0.06) : Colors.transparent,
+                    border: Border(top: BorderSide(
+                      color: active ? AppTheme.cyan : Colors.transparent, width: 2)),
+                  ),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(active ? item.activeIcon : item.icon,
+                      color: active ? AppTheme.cyan : AppTheme.muted, size: 22),
+                    const SizedBox(height: 3),
+                    Text(item.label, style: AppTheme.condensed(9, FontWeight.w600,
+                      active ? AppTheme.cyan : AppTheme.muted)),
+                  ]),
+                ),
+              ));
+            }).toList(),
+          ),
         ),
       ),
     );
   }
+}
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, String label) {
-    return BottomNavigationBarItem(
-      icon: Padding(
-        padding: const EdgeInsets.only(bottom: 4.0),
-        child: Icon(icon, size: 22),
-      ),
-      activeIcon: Padding(
-        padding: const EdgeInsets.only(bottom: 4.0),
-        child: Icon(icon, size: 24, color: AppTheme.cyan, shadows: AppTheme.glowCyanSm),
-      ),
-      label: label,
-    );
-  }
-
-  void _showAuthModal(BuildContext context) {
-    // Auth Modal implementation to go here (BottomSheet)
-  }
+class _NavItem {
+  final IconData icon, activeIcon;
+  final String label;
+  const _NavItem({required this.icon, required this.activeIcon, required this.label});
 }

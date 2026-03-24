@@ -1,18 +1,12 @@
 name: Build Flutter APK
-
 on:
   push:
-    branches:
-      - master
+    branches: [master, main]
   workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,38 +14,28 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
-          channel: 'stable'
+          flutter-version: '3.19.6'
+          channel: stable
+          cache: true
 
       - name: Flutter Doctor
-        run: flutter doctor
-
-      - name: Recreate Flutter Project Cleanly
-        run: |
-          rm -rf temp_app
-          flutter create temp_app
-          cp -r lib temp_app/
-          cp pubspec.yaml temp_app/
-          cd temp_app
+        run: flutter doctor -v
 
       - name: Install dependencies
-        run: |
-          cd temp_app
-          flutter pub get
+        run: flutter pub get
 
       - name: Build APK
-        run: |
-          cd temp_app
-          flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: temp_app/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
