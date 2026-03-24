@@ -27,6 +27,12 @@ jobs:
       - name: Flutter Doctor
         run: flutter doctor -v
 
+      - name: Create Flutter project scaffold
+        run: |
+          flutter create --org com.a7cricket --project-name ashes_cricket temp_scaffold
+          cp -r temp_scaffold/android ./android
+          rm -rf temp_scaffold
+
       - name: Install dependencies
         run: flutter pub get
 
